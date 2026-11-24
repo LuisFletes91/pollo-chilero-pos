@@ -168,7 +168,7 @@
       "supabase/tests/fixtures.ts",
       "supabase/tests/ventas.test.ts"
     ],
-    "status": "pending"
+    "status": "done"
   },
   {
     "id": "E1-T6",

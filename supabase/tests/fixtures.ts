@@ -70,3 +70,91 @@ export async function device(
   );
   return { deviceId: r.rows[0]!.id, uid, claims: { sub: uid } };
 }
+
+// ---------- Eventos de la caja (paso 5) ----------
+export type PosEvent = {
+  client_seq: number;
+  event_id: string;
+  type: string;
+  staff_id: string;
+  client_created_at: string;
+  payload: Record<string, unknown>;
+};
+
+// 16:00 UTC = 10:00 en Honduras (dentro del horario 09:00–21:00).
+export function posEvent(
+  seq: number,
+  type: string,
+  staffId: string,
+  payload: Record<string, unknown>,
+  at = "2026-11-22T16:00:00.000Z",
+): PosEvent {
+  return {
+    client_seq: seq,
+    event_id: crypto.randomUUID(),
+    type,
+    staff_id: staffId,
+    client_created_at: at,
+    payload,
+  };
+}
+
+export function openShiftEvent(
+  seq: number,
+  cashierId: string,
+  approverId: string,
+  shiftId: string,
+  float: Record<string, number> = { "100": 3, "50": 4 },
+): PosEvent {
+  return posEvent(seq, "turno_abierto", cashierId, {
+    shift_id: shiftId,
+    opening_float: float,
+    approved_by: approverId,
+  });
+}
+
+export type SaleLine = { productId: string; qty: number; unitPrice: number };
+export type Payment = {
+  payment_id: string;
+  method: "efectivo" | "transferencia";
+  amount: number;
+  cash_received?: number;
+  transfer_reference?: string;
+};
+
+export function saleEvent(
+  seq: number,
+  cashierId: string,
+  shiftId: string,
+  opts: {
+    receipt: number;
+    lines: SaleLine[];
+    payments: Payment[];
+    orderType?: "comer_aqui" | "para_llevar";
+    saleId?: string;
+    total?: number;
+  },
+): PosEvent {
+  const total =
+    opts.total ?? Math.round(opts.lines.reduce((s, l) => s + l.qty * l.unitPrice, 0) * 100) / 100;
+  return posEvent(seq, "venta", cashierId, {
+    sale_id: opts.saleId ?? crypto.randomUUID(),
+    receipt_number: opts.receipt,
+    shift_id: shiftId,
+    order_type: opts.orderType ?? "comer_aqui",
+    total,
+    lines: opts.lines.map((l) => ({
+      product_id: l.productId,
+      qty: l.qty,
+      unit_price: l.unitPrice,
+    })),
+    payments: opts.payments,
+  });
+}
+
+export async function productId(db: PGlite, code: string): Promise<string> {
+  const r = await db.query<{ id: string }>("select id::text as id from products where code = $1", [
+    code,
+  ]);
+  return r.rows[0]!.id;
+}
