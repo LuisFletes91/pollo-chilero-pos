@@ -273,7 +273,7 @@
       "src/lib/utils.ts",
       "src/lib/backend.test.tsx"
     ],
-    "status": "pending"
+    "status": "done"
   },
   {
     "id": "E2-T3",
