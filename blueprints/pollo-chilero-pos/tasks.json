@@ -458,7 +458,7 @@
       "src/pos/PosRoutes.tsx",
       "src/pos/sync.test.tsx"
     ],
-    "status": "pending"
+    "status": "done"
   },
   {
     "id": "E3-T2",
@@ -494,7 +494,7 @@
       "src/pos/SaleScreen.tsx",
       "src/pos/print/receipt.test.ts"
     ],
-    "status": "pending"
+    "status": "done"
   },
   {
     "id": "E3-T3",
@@ -531,7 +531,7 @@
       "src/panel/DashboardPage.tsx",
       "src/panel/panel-access.test.tsx"
     ],
-    "status": "pending"
+    "status": "done"
   },
   {
     "id": "E3-T4",
@@ -569,7 +569,7 @@
       "src/panel/PanelRoutes.tsx",
       "src/panel/panel-ops.test.tsx"
     ],
-    "status": "pending"
+    "status": "done"
   },
   {
     "id": "E3-T5",
@@ -605,7 +605,7 @@
       "src/panel/PanelRoutes.tsx",
       "src/panel/dayclose.test.tsx"
     ],
-    "status": "pending"
+    "status": "done"
   },
   {
     "id": "E3-T6",
@@ -646,6 +646,6 @@
       "e2e/flujos.spec.ts",
       "src/lib/hardening.test.ts"
     ],
-    "status": "pending"
+    "status": "done"
   }
 ]

@@ -1,15 +1,19 @@
 import { useLiveQuery } from "dexie-react-hooks";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, Route, Routes } from "react-router-dom";
+import { useBackend } from "@/lib/backend";
 import { buttonVariants } from "@/lib/utils";
 import { CashierLogin } from "@/pos/CashierLogin";
 import { getMeta, type StaffRow } from "@/pos/db";
+import { exportEmergency } from "@/pos/emergency-export";
 import { PairingScreen } from "@/pos/PairingScreen";
 import { HardwareTestPage } from "@/pos/print/HardwareTestPage";
 import { SaleScreen } from "@/pos/SaleScreen";
 import { currentShift } from "@/pos/shift";
 import { CloseShiftScreen, OpenShiftScreen } from "@/pos/ShiftScreens";
 import { SupervisorActions } from "@/pos/SupervisorActions";
+import { startSync } from "@/pos/sync";
+import { SyncIndicator } from "@/pos/SyncIndicator";
 
 type Vista = "principal" | "supervisor";
 
@@ -23,6 +27,9 @@ function PosHome() {
   const [vista, setVista] = useState<Vista>("principal");
   // Se guarda el id del turno al cerrar: el resultado debe seguir visible aunque el turno ya no esté abierto.
   const [cerrando, setCerrando] = useState<string | null>(null);
+  const backend = useBackend("pos");
+  const emparejada = Boolean(estado?.deviceId);
+  useEffect(() => (emparejada ? startSync(backend) : undefined), [emparejada, backend]);
 
   if (!estado) {
     return (
@@ -81,6 +88,14 @@ function PosHome() {
       <Link to="hardware" className={buttonVariants({ variant: "ghost" })}>
         Prueba de impresora
       </Link>
+      <button
+        type="button"
+        className={buttonVariants({ variant: "ghost" })}
+        onClick={() => void exportEmergency()}
+      >
+        Exportar respaldo de emergencia
+      </button>
+      <SyncIndicator />
     </nav>
   );
 
