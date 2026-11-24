@@ -2,7 +2,9 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { NavLink, Route, Routes } from "react-router-dom";
 import { queryClient } from "@/lib/backend";
 import { cn } from "@/lib/utils";
+import { AdminPage } from "@/panel/AdminPage";
 import { DashboardPage } from "@/panel/DashboardPage";
+import { InventoryPage } from "@/panel/InventoryPage";
 import { PanelGuard, usePanelUser } from "@/panel/PanelGuard";
 
 const enlace = ({ isActive }: { isActive: boolean }) =>
@@ -24,10 +26,20 @@ function PanelLayout() {
           <NavLink to="/panel" end className={enlace}>
             Tablero
           </NavLink>
+          <NavLink to="/panel/inventario" className={enlace}>
+            Inventario
+          </NavLink>
+          {user.role === "supervisor" && (
+            <NavLink to="/panel/administracion" className={enlace}>
+              Administración
+            </NavLink>
+          )}
         </nav>
       </header>
       <Routes>
         <Route index element={<DashboardPage />} />
+        <Route path="inventario" element={<InventoryPage />} />
+        <Route path="administracion" element={<AdminPage />} />
       </Routes>
     </main>
   );
