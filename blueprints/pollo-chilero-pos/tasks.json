@@ -347,7 +347,7 @@
       "src/pos/PosRoutes.tsx",
       "src/pos/pin-outbox.test.tsx"
     ],
-    "status": "pending"
+    "status": "done"
   },
   {
     "id": "E2-T5",

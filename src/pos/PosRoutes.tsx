@@ -1,6 +1,9 @@
 import { useLiveQuery } from "dexie-react-hooks";
+import { useState } from "react";
 import { Link, Route, Routes } from "react-router-dom";
-import { getMeta } from "@/pos/db";
+import { buttonVariants } from "@/lib/utils";
+import { CashierLogin } from "@/pos/CashierLogin";
+import { getMeta, type StaffRow } from "@/pos/db";
 import { PairingScreen } from "@/pos/PairingScreen";
 import { HardwareTestPage } from "@/pos/print/HardwareTestPage";
 
@@ -9,6 +12,7 @@ function PosHome() {
     deviceId: await getMeta<string>("deviceId"),
     label: await getMeta<string>("deviceLabel"),
   }));
+  const [cajero, setCajero] = useState<StaffRow | null>(null);
 
   if (!estado) {
     return (
@@ -19,13 +23,23 @@ function PosHome() {
     );
   }
   if (!estado.deviceId) return <PairingScreen />;
+  if (!cajero) return <CashierLogin onLogin={setCajero} />;
   return (
     <main className="min-h-screen bg-background p-6 text-foreground">
-      <h1 className="text-3xl font-bold text-primary">Caja</h1>
-      <p className="mt-2 text-muted-foreground">Caja emparejada: {estado.label}</p>
-      <Link to="hardware" className="mt-4 inline-block font-bold text-primary underline">
-        Prueba de impresora
-      </Link>
+      <h1 className="text-3xl font-bold text-primary">Caja — {estado.label}</h1>
+      <p className="mt-2 text-lg">Atiende: {cajero.displayName}</p>
+      <div className="mt-4 flex gap-3">
+        <button
+          type="button"
+          className={buttonVariants({ variant: "ghost" })}
+          onClick={() => setCajero(null)}
+        >
+          Cambiar cajero
+        </button>
+        <Link to="hardware" className={buttonVariants({ variant: "ghost" })}>
+          Prueba de impresora
+        </Link>
+      </div>
     </main>
   );
 }
