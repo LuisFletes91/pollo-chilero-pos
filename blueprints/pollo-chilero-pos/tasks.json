@@ -100,7 +100,7 @@
       "supabase/tests/catalogo.test.ts",
       "supabase/tests/bitacora.test.ts"
     ],
-    "status": "pending"
+    "status": "done"
   },
   {
     "id": "E1-T4",
