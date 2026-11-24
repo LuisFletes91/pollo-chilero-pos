@@ -20,11 +20,12 @@ type Summary = {
   cajas: { id: string; label: string; last_seen_at: string | null; active: boolean }[];
 };
 type Alerta = { id: number; kind: string; severity: string; message: string; created_at: string };
-type Transferencia = {
+export type Transferencia = {
   payment_id: string;
   receipt_code: string;
   amount: number;
   reference: string;
+  business_date?: string;
 };
 type Anulacion = {
   void_id: string;
@@ -96,7 +97,7 @@ function Estado(props: {
   return null;
 }
 
-function TransferenciaItem(props: { t: Transferencia; supervisor: boolean }) {
+export function TransferenciaItem(props: { t: Transferencia; supervisor: boolean }) {
   const { t, supervisor } = props;
   const confirmar = useDecision("confirm_transfer", "transferencias_pendientes");
   const rechazar = useDecision("reject_transfer", "transferencias_pendientes");

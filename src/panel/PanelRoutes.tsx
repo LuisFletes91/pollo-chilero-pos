@@ -4,8 +4,10 @@ import { queryClient } from "@/lib/backend";
 import { cn } from "@/lib/utils";
 import { AdminPage } from "@/panel/AdminPage";
 import { DashboardPage } from "@/panel/DashboardPage";
+import { DayCloseWizard } from "@/panel/DayCloseWizard";
 import { InventoryPage } from "@/panel/InventoryPage";
 import { PanelGuard, usePanelUser } from "@/panel/PanelGuard";
+import { ReportsPage } from "@/panel/ReportsPage";
 
 const enlace = ({ isActive }: { isActive: boolean }) =>
   cn(
@@ -30,6 +32,14 @@ function PanelLayout() {
             Inventario
           </NavLink>
           {user.role === "supervisor" && (
+            <NavLink to="/panel/cierre" className={enlace}>
+              Cierre del día
+            </NavLink>
+          )}
+          <NavLink to="/panel/reportes" className={enlace}>
+            Reportes
+          </NavLink>
+          {user.role === "supervisor" && (
             <NavLink to="/panel/administracion" className={enlace}>
               Administración
             </NavLink>
@@ -40,6 +50,17 @@ function PanelLayout() {
         <Route index element={<DashboardPage />} />
         <Route path="inventario" element={<InventoryPage />} />
         <Route path="administracion" element={<AdminPage />} />
+        <Route
+          path="cierre"
+          element={
+            user.role === "supervisor" ? (
+              <DayCloseWizard />
+            ) : (
+              <p role="alert">Solo los supervisores cierran el día.</p>
+            )
+          }
+        />
+        <Route path="reportes" element={<ReportsPage />} />
       </Routes>
     </main>
   );

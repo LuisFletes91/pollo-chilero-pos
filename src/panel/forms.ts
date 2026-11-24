@@ -103,3 +103,15 @@ export const settingSchema = z.discriminatedUnion("key", [
 export function firstError(e: z.ZodError): string {
   return e.issues[0]?.message ?? "Datos inválidos";
 }
+
+export const depositSchema = z.object({
+  kind: z.enum(["entrega_socio", "deposito_banco"], "Elija el tipo de ingreso"),
+  amount: z.preprocess(num, z.number("Indique el monto").min(0, "El monto no puede ser negativo")),
+  receiver: z.string().trim().min(1, "Indique quién recibe"),
+});
+
+export const pinSchema = z.string().regex(/^\d{4}$/, "El PIN debe tener 4 dígitos");
+export const justificacionSchema = z
+  .string()
+  .trim()
+  .min(10, "La justificación debe tener 10 o más caracteres");
