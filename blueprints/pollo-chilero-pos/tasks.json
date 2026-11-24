@@ -134,7 +134,7 @@
       "supabase/tests/fixtures.ts",
       "supabase/tests/seguridad.test.ts"
     ],
-    "status": "pending"
+    "status": "done"
   },
   {
     "id": "E1-T5",
