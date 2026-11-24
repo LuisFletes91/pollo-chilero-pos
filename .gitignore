@@ -1,0 +1,34 @@
+# Dependencias y salidas generadas
+node_modules/
+dist/
+dist-e2e-mock/
+dev-dist/
+coverage/
+playwright-report/
+test-results/
+blob-report/
+
+# Secretos: nunca se versionan. Las excepciones son archivos SIN secretos (valores falsos).
+.env
+.env.*
+!.env.example
+!.env.test
+!.env.e2e
+!.env.e2e-mock
+*.local
+
+# Supabase CLI (estado local)
+supabase/.temp/
+supabase/.branches/
+
+# Insumos y respaldos que nunca entran al repo (Excel de la franquicia, propuesta, pg_dump, respaldo de la caja)
+*.xlsm
+*.docx
+*.dump
+respaldo-*.json
+
+# Claude Code: preferencias locales de cada persona
+.claude/settings.local.json
+
+.DS_Store
+Thumbs.db

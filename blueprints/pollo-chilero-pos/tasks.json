@@ -1,0 +1,651 @@
+[
+  {
+    "id": "E1-T1",
+    "title": "Andamiaje, toolchain y gates con prueba de humo",
+    "epic": "01-fundacion-datos",
+    "dependencies": [],
+    "priority": "p0",
+    "acceptance": [
+      "CUANDO se ejecuta `npm run typecheck` EL SISTEMA DEBERÁ salir con código 0 con `strict: true` en `tsconfig.json`.",
+      "CUANDO se ejecutan `npm run lint` y `npm run format:check` desde la raíz con el bundle presente en `blueprints/` EL SISTEMA DEBERÁ salir con código 0 en ambos.",
+      "CUANDO se ejecuta `npm run test` EL SISTEMA DEBERÁ ejecutar `src/App.test.tsx` y salir con código 0 con 0 pruebas fallidas.",
+      "CUANDO se ejecuta `npm run build` EL SISTEMA DEBERÁ generar `dist/index.html` y `dist/sw.js` y salir con código 0.",
+      "CUANDO `npm run e2e -- e2e/smoke.spec.ts` sirve el build de producción y abre `/`, `/pos` y `/panel` EL SISTEMA DEBERÁ mostrar los encabezados de nivel 1 `POLLO CHILERO`, `Caja` y `Panel de socios` y salir con código 0."
+    ],
+    "verify": [
+      "npm run typecheck",
+      "npm run lint",
+      "npm run format:check",
+      "npm run test",
+      "npm run build",
+      "test -f dist/index.html",
+      "test -f dist/sw.js",
+      "npm run e2e -- e2e/smoke.spec.ts",
+      "status=0; grep -rnE '\\.(skip|only)\\(' src supabase/tests e2e || status=$?; test \"$status\" -eq 1"
+    ],
+    "checkpoint": "step-01-andamiaje",
+    "files": [
+      "src/App.tsx",
+      "src/pos/PosRoutes.tsx",
+      "src/panel/PanelRoutes.tsx",
+      "src/App.test.tsx",
+      "e2e/smoke.spec.ts"
+    ],
+    "status": "done"
+  },
+  {
+    "id": "E1-T2",
+    "title": "Prueba temprana de impresora térmica y gaveta",
+    "epic": "01-fundacion-datos",
+    "dependencies": [
+      "E1-T1"
+    ],
+    "priority": "p0",
+    "acceptance": [
+      "CUANDO `npm run test -- src/pos/print/hardware.test.tsx` codifica el ticket de prueba EL SISTEMA DEBERÁ producir bytes que contienen la inicialización ESC @ (`1b 40`) y el corte GS V (`1d 56`).",
+      "CUANDO se codifica el ticket de prueba EL SISTEMA NO DEBERÁ incluir el pulso de gaveta ESC p (`1b 70`), porque la gaveta no tiene conexión con el sistema y se abre a mano.",
+      "CUANDO `navigator.serial` no existe EL SISTEMA DEBERÁ devolver `false` en `isWebSerialSupported()` y la página `/pos/hardware` DEBERÁ mostrar habilitado el botón \"Imprimir con el navegador (respaldo)\".",
+      "CUANDO se pulsa \"Imprimir con el navegador (respaldo)\" EL SISTEMA DEBERÁ renderizar el ticket en un elemento con la clase `receipt-80mm` y llamar `window.print()` una vez."
+    ],
+    "verify": [
+      "npm run test -- src/pos/print/hardware.test.tsx",
+      "npm run typecheck",
+      "npm run lint",
+      "npm run format:check",
+      "npm run test",
+      "npm run build",
+      "status=0; grep -rnE '\\.(skip|only)\\(' src supabase/tests e2e || status=$?; test \"$status\" -eq 1"
+    ],
+    "checkpoint": "step-02-hardware-impresora",
+    "files": [
+      "src/pos/print/escpos.ts",
+      "src/pos/print/serial.ts",
+      "src/pos/print/HardwareTestPage.tsx",
+      "src/pos/PosRoutes.tsx",
+      "src/pos/print/hardware.test.tsx"
+    ],
+    "status": "pending"
+  },
+  {
+    "id": "E1-T3",
+    "title": "Esquema base, bitácora con hash y catálogo de 59 productos",
+    "epic": "01-fundacion-datos",
+    "dependencies": [
+      "E1-T1"
+    ],
+    "priority": "p0",
+    "acceptance": [
+      "CUANDO `npm run test:db` aplica `supabase/tests/shim.sql` y todas las migraciones en PGlite EL SISTEMA DEBERÁ salir con código 0 y existir las tablas `locations`, `categories`, `products`, `inventory_items`, `recipes`, `staff`, `devices`, `pairing_codes`, `settings`, `alerts` y `audit_log`.",
+      "CUANDO se consulta `products` tras las migraciones EL SISTEMA DEBERÁ contener exactamente 59 productos activos, cada uno con `code` que cumple `^(CF|CP|PZ|CI|EX|BE)-[0-9]{3}$` y un `legacy_code` único.",
+      "CUANDO se leen las recetas de `PZ-001`, `PZ-002`, `PZ-003`, `PZ-004` y `PZ-005` EL SISTEMA DEBERÁ devolver (ALA, PIERNA, MUSLO, PECHUGA) = (1,1,1,1), (2,2,1,1), (2,2,2,2), (3,3,3,3) y (6,6,6,6).",
+      "CUANDO se intenta `DELETE` de un producto o `UPDATE` de su `code` EL SISTEMA DEBERÁ rechazarlo con un error cuyo mensaje empieza por `CODIGO_INMUTABLE`.",
+      "CUANDO se actualiza el precio de `CF-001` EL SISTEMA DEBERÁ insertar exactamente una fila en `audit_log` con `before` y `after`, y `app.audit_chain_check()` DEBERÁ devolver `ok = true`.",
+      "CUANDO una fila de `audit_log` se altera con el trigger `audit_log_inmutable` deshabilitado EL SISTEMA DEBERÁ hacer que `app.audit_chain_check()` devuelva `ok = false` con el `first_bad_id` de esa fila, y un `UPDATE` normal sobre `audit_log` DEBERÁ fallar con `BITACORA_INMUTABLE`."
+    ],
+    "verify": [
+      "npm run test:db -- supabase/tests/esquema.test.ts supabase/tests/catalogo.test.ts supabase/tests/bitacora.test.ts",
+      "npm run test:db",
+      "npm run typecheck",
+      "npm run lint",
+      "npm run format:check",
+      "npm run test",
+      "npm run build",
+      "status=0; grep -rnE '\\.(skip|only)\\(' src supabase/tests e2e || status=$?; test \"$status\" -eq 1"
+    ],
+    "checkpoint": "step-03-esquema-catalogo",
+    "files": [
+      "supabase/migrations/20261122000100_esquema_base.sql",
+      "supabase/migrations/20261122000110_catalogo_inicial.sql",
+      "supabase/tests/esquema.test.ts",
+      "supabase/tests/catalogo.test.ts",
+      "supabase/tests/bitacora.test.ts"
+    ],
+    "status": "pending"
+  },
+  {
+    "id": "E1-T4",
+    "title": "Seguridad de BD: REVOKE, RLS con MFA y emparejamiento",
+    "epic": "01-fundacion-datos",
+    "dependencies": [
+      "E1-T3"
+    ],
+    "priority": "p0",
+    "acceptance": [
+      "CUANDO se ejecuta `npm run test:db` EL SISTEMA DEBERÁ comprobar que toda tabla de `public` tiene RLS habilitado y que `anon` no tiene SELECT, INSERT, UPDATE ni DELETE sobre ninguna tabla o vista, ni EXECUTE sobre ninguna función de `public`.",
+      "CUANDO el rol `authenticated` intenta `INSERT`, `UPDATE` o `DELETE` directo sobre `products`, `staff` o `audit_log` EL SISTEMA DEBERÁ fallar con SQLSTATE `42501`.",
+      "CUANDO un usuario de panel con `aal = 'aal1'` consulta `products` EL SISTEMA DEBERÁ devolver 0 filas, y con `aal = 'aal2'` DEBERÁ devolver las 59 filas.",
+      "CUANDO un usuario autenticado sin identidad canjea con `pos_claim_device` un código vigente creado por `create_pairing_code` EL SISTEMA DEBERÁ crear exactamente un `devices` activo ligado a su `auth.uid()`, y un segundo canje del mismo código por otro usuario DEBERÁ fallar con `CODIGO_INVALIDO`.",
+      "CUANDO un dispositivo emparejado llama `pos_pull_snapshot(0)` EL SISTEMA DEBERÁ devolver productos, categorías, staff con `pin_hash` y `settings`, y CUANDO la llama un usuario de panel DEBERÁ fallar con `NO_AUTORIZADO`.",
+      "CUANDO un socio (no supervisor) con `aal2` llama `create_pairing_code` o `upsert_staff` EL SISTEMA DEBERÁ fallar con `NO_AUTORIZADO`."
+    ],
+    "verify": [
+      "npm run test:db -- supabase/tests/seguridad.test.ts",
+      "npm run test:db",
+      "npm run typecheck",
+      "npm run lint",
+      "npm run format:check",
+      "npm run test",
+      "npm run build",
+      "status=0; grep -rnE '\\.(skip|only)\\(' src supabase/tests e2e || status=$?; test \"$status\" -eq 1"
+    ],
+    "checkpoint": "step-04-seguridad",
+    "files": [
+      "supabase/migrations/20261122000200_seguridad.sql",
+      "supabase/tests/fixtures.ts",
+      "supabase/tests/seguridad.test.ts"
+    ],
+    "status": "pending"
+  },
+  {
+    "id": "E1-T5",
+    "title": "Ventas, pagos, anulaciones y pos_push_events idempotente",
+    "epic": "01-fundacion-datos",
+    "dependencies": [
+      "E1-T4"
+    ],
+    "priority": "p0",
+    "acceptance": [
+      "CUANDO el mismo lote de eventos `turno_abierto` + `venta` se envía dos veces a `pos_push_events` EL SISTEMA DEBERÁ crear exactamente un `shifts` y un `sales`, y responder `aplicado` la primera vez y `duplicado` la segunda para cada `client_seq`.",
+      "CUANDO llega una `venta` cuyo `total` no es la suma de `qty * unit_price`, o sin líneas EL SISTEMA DEBERÁ registrar el evento como `rechazado` con error `TOTAL_INVALIDO` o `VENTA_VACIA`, no crear filas en `sales` y crear una alerta `evento_rechazado`.",
+      "CUANDO llega una `venta` con `receipt_number` mayor que el último + 1 EL SISTEMA DEBERÁ aplicarla y crear una alerta `hueco_numeracion`, y CUANDO el precio unitario difiere del catálogo DEBERÁ crear una alerta `precio_distinto`.",
+      "CUANDO llega una `venta` sin turno abierto de esa caja EL SISTEMA DEBERÁ rechazarla con `TURNO_NO_ABIERTO`.",
+      "CUANDO llega `anulacion_solicitada` con `approved_by` igual al `staff_id` que la solicita EL SISTEMA DEBERÁ rechazarla con `SEGREGACION`, y sin `approved_by` DEBERÁ dejar la venta en `anulacion_pendiente` hasta que `decide_void` de un supervisor distinto la marque `anulada`.",
+      "CUANDO una venta tiene un pago `transferencia` EL SISTEMA DEBERÁ dejarla en `pago_pendiente` hasta que `confirm_transfer` la pase a `pagada`, o `reject_transfer` la pase a `cobro_fallido` con una alerta `transferencia_rechazada`."
+    ],
+    "verify": [
+      "npm run test:db -- supabase/tests/ventas.test.ts",
+      "npm run test:db",
+      "npm run typecheck",
+      "npm run lint",
+      "npm run format:check",
+      "npm run test",
+      "npm run build",
+      "status=0; grep -rnE '\\.(skip|only)\\(' src supabase/tests e2e || status=$?; test \"$status\" -eq 1"
+    ],
+    "checkpoint": "step-05-ventas-servidor",
+    "files": [
+      "supabase/migrations/20261122000300_ventas.sql",
+      "supabase/tests/fixtures.ts",
+      "supabase/tests/ventas.test.ts"
+    ],
+    "status": "pending"
+  },
+  {
+    "id": "E1-T6",
+    "title": "Inventario por receta: compras, cortes, conteos y merma",
+    "epic": "01-fundacion-datos",
+    "dependencies": [
+      "E1-T5"
+    ],
+    "priority": "p0",
+    "acceptance": [
+      "CUANDO se aplica una venta de `PZ-003` (8 piezas) EL SISTEMA DEBERÁ insertar movimientos `venta` de −2 para `ALA`, `PIERNA`, `MUSLO` y `PECHUGA`, y CUANDO esa venta se anula DEBERÁ insertar movimientos `anulacion` que devuelven el stock teórico de cada ítem al valor previo.",
+      "CUANDO `register_purchase` registra 10 `POLLO-ENTERO` de 45.5 libras por L 2,275.00 EL SISTEMA DEBERÁ guardar `cost_per_unit = 227.50` y `cost_per_pound = 50.00` y sumar 10 al stock teórico de `POLLO-ENTERO`.",
+      "CUANDO `register_cut` corta 2 pollos sin desglose explícito EL SISTEMA DEBERÁ restar 2 de `POLLO-ENTERO`, sumar 4 a cada una de `ALA`, `PIERNA`, `MUSLO` y `PECHUGA`, y fijar el costo por pieza = costo promedio del pollo × 2 ÷ 16.",
+      "CUANDO `register_cut` pide cortar más pollos que el stock teórico EL SISTEMA DEBERÁ fallar con `STOCK_INSUFICIENTE` sin insertar movimientos.",
+      "CUANDO `app.apply_inventory_count` registra un conteo menor al teórico EL SISTEMA DEBERÁ insertar un movimiento `ajuste_conteo` por la diferencia y una línea con `waste_value` = (teórico − contado) × `avg_cost`.",
+      "CUANDO se intenta `UPDATE` o `DELETE` sobre `inventory_movements` EL SISTEMA DEBERÁ fallar con `MOVIMIENTO_INMUTABLE`."
+    ],
+    "verify": [
+      "npm run test:db -- supabase/tests/inventario.test.ts",
+      "npm run test:db",
+      "npm run typecheck",
+      "npm run lint",
+      "npm run format:check",
+      "npm run test",
+      "npm run build",
+      "status=0; grep -rnE '\\.(skip|only)\\(' src supabase/tests e2e || status=$?; test \"$status\" -eq 1"
+    ],
+    "checkpoint": "step-06-inventario-servidor",
+    "files": [
+      "supabase/migrations/20261122000400_inventario.sql",
+      "supabase/tests/inventario.test.ts"
+    ],
+    "status": "pending"
+  },
+  {
+    "id": "E2-T1",
+    "title": "Cierre del día, reporte Z, panel y SAR preparado apagado",
+    "epic": "02-cierre-y-caja",
+    "dependencies": [
+      "E1-T6"
+    ],
+    "priority": "p0",
+    "acceptance": [
+      "CUANDO el supervisor ejecuta `day_close_deposit` antes de registrar el conteo de efectivo y el de inventario, o con transferencias `pendiente` del día EL SISTEMA DEBERÁ fallar con `ORDEN_CIERRE` o `TRANSFERENCIAS_PENDIENTES` respectivamente.",
+      "CUANDO `day_close_finalize` recibe un `p_pin_hash` distinto del `pin_hash` del supervisor EL SISTEMA DEBERÁ fallar con `PIN_INVALIDO`, y con una diferencia de efectivo mayor a `cash_diff_threshold` sin justificación DEBERÁ fallar con `JUSTIFICACION_REQUERIDA`.",
+      "CUANDO `day_close_finalize` cierra un día con ventas en efectivo de L 209.00 y L 120.00, una venta anulada de L 25.00 y fondo de L 500.00 EL SISTEMA DEBERÁ guardar `z_report` con `ventas_total = 329`, `anulaciones.cantidad = 1`, `efectivo.esperado = 829`, `status = 'cerrado'` y `z_hash` igual al sha256 de `z_report::text`.",
+      "CUANDO se intenta `UPDATE` sobre un `day_closes` cerrado, o anular una venta de ese día EL SISTEMA DEBERÁ fallar con `DIA_CERRADO`.",
+      "CUANDO `app.next_fiscal_number()` se llama con `fiscal_config` activo, establecimiento `001`, punto `001`, tipo `01` y siguiente 1 EL SISTEMA DEBERÁ devolver `001-001-01-00000001` y luego `001-001-01-00000002`.",
+      "CUANDO el rango está agotado o `fecha_limite` ya pasó EL SISTEMA DEBERÁ fallar con `RANGO_FISCAL_AGOTADO` o `FECHA_LIMITE_VENCIDA`, y con `fiscal_config.activo = false` DEBERÁ fallar con `FISCAL_INACTIVO`."
+    ],
+    "verify": [
+      "npm run test:db -- supabase/tests/cierre.test.ts supabase/tests/fiscal.test.ts",
+      "npm run test:db",
+      "npm run typecheck",
+      "npm run lint",
+      "npm run format:check",
+      "npm run test",
+      "npm run build",
+      "status=0; grep -rnE '\\.(skip|only)\\(' src supabase/tests e2e || status=$?; test \"$status\" -eq 1"
+    ],
+    "checkpoint": "step-07-cierre-z-fiscal",
+    "files": [
+      "supabase/migrations/20261122000500_cierre_dia.sql",
+      "supabase/migrations/20261122000600_fiscal.sql",
+      "supabase/tests/cierre.test.ts",
+      "supabase/tests/fiscal.test.ts"
+    ],
+    "status": "pending"
+  },
+  {
+    "id": "E2-T2",
+    "title": "App shell: env validado, backend y utilidades",
+    "epic": "02-cierre-y-caja",
+    "dependencies": [
+      "E1-T1",
+      "E1-T3"
+    ],
+    "priority": "p0",
+    "acceptance": [
+      "CUANDO `parseEnv` recibe `VITE_SUPABASE_URL` vacío o que no es una URL EL SISTEMA DEBERÁ lanzar un error cuyo mensaje contiene `VITE_SUPABASE_URL`.",
+      "CUANDO `npm run test` crea los backends `pos` y `panel` con los valores de `.env.test` EL SISTEMA DEBERÁ hacerlo sin llamar `fetch`.",
+      "CUANDO el backend recibe un error con mensaje `CODIGO_INVALIDO: x` EL SISTEMA DEBERÁ lanzar un `BackendError` con `code = \"CODIGO_INVALIDO\"`.",
+      "CUANDO `formatLempiras(1234.5)` se ejecuta EL SISTEMA DEBERÁ devolver `L 1,234.50` sin usar `Intl`.",
+      "CUANDO `App` se renderiza en `/pos` y `/panel` EL SISTEMA DEBERÁ seguir mostrando los encabezados `Caja` y `Panel de socios`, y `npm run e2e -- e2e/smoke.spec.ts` DEBERÁ salir con código 0."
+    ],
+    "verify": [
+      "npm run test -- src/lib/backend.test.tsx",
+      "npm run typecheck",
+      "npm run lint",
+      "npm run format:check",
+      "npm run test",
+      "npm run test:db",
+      "npm run build",
+      "npm run e2e -- e2e/smoke.spec.ts",
+      "status=0; grep -rnE '\\.(skip|only)\\(' src supabase/tests e2e || status=$?; test \"$status\" -eq 1"
+    ],
+    "checkpoint": "step-08-app-shell",
+    "files": [
+      "src/lib/env.ts",
+      "src/lib/backend.tsx",
+      "src/lib/backend-impl.ts",
+      "src/lib/utils.ts",
+      "src/lib/backend.test.tsx"
+    ],
+    "status": "pending"
+  },
+  {
+    "id": "E2-T3",
+    "title": "Emparejamiento de la caja, Dexie e instantánea",
+    "epic": "02-cierre-y-caja",
+    "dependencies": [
+      "E1-T2",
+      "E1-T4",
+      "E2-T2"
+    ],
+    "priority": "p0",
+    "acceptance": [
+      "CUANDO la caja no está emparejada y se abre `/pos` EL SISTEMA DEBERÁ mostrar el encabezado `Caja — Emparejar esta caja` con un campo para el código de 8 caracteres.",
+      "CUANDO `pairDevice` se ejecuta con el código `abcd2345` contra un backend falso que lo acepta EL SISTEMA DEBERÁ llamar `signInAnonymously` y luego `pos_claim_device` con `p_code` `ABCD2345`, y guardar `deviceId` en la tabla `meta` de Dexie.",
+      "CUANDO el backend falso rechaza con `CODIGO_INVALIDO` EL SISTEMA DEBERÁ mostrar `Código inválido o vencido` y no guardar `deviceId`.",
+      "CUANDO `pullSnapshot` recibe una instantánea con versión 7 y `last_receipt_number = 120` EL SISTEMA DEBERÁ reemplazar `products`, `categories`, `staff` y `settings` en Dexie, guardar `snapshotVersion = 7` y fijar el contador local de recibos en el mayor entre el local y 120.",
+      "CUANDO la instantánea responde `unchanged: true` EL SISTEMA DEBERÁ conservar los datos locales sin escribir en Dexie."
+    ],
+    "verify": [
+      "npm run test -- src/pos/device.test.ts",
+      "npm run typecheck",
+      "npm run lint",
+      "npm run format:check",
+      "npm run test",
+      "npm run test:db",
+      "npm run build",
+      "npm run e2e -- e2e/smoke.spec.ts",
+      "status=0; grep -rnE '\\.(skip|only)\\(' src supabase/tests e2e || status=$?; test \"$status\" -eq 1"
+    ],
+    "checkpoint": "step-09-emparejamiento-dexie",
+    "files": [
+      "src/pos/db.ts",
+      "src/pos/device.ts",
+      "src/pos/PairingScreen.tsx",
+      "src/pos/PosRoutes.tsx",
+      "src/pos/device.test.ts"
+    ],
+    "status": "pending"
+  },
+  {
+    "id": "E2-T4",
+    "title": "Selector de cajero, PIN PBKDF2 y outbox",
+    "epic": "02-cierre-y-caja",
+    "dependencies": [
+      "E2-T3"
+    ],
+    "priority": "p0",
+    "acceptance": [
+      "CUANDO la caja emparejada abre `/pos` sin cajero activo EL SISTEMA DEBERÁ mostrar un botón por cada staff activo con rol `cajero` o `supervisor` y PIN, con su nombre.",
+      "CUANDO se toca un nombre y se ingresa el PIN correcto de 4 dígitos EL SISTEMA DEBERÁ marcar a ese staff como cajero activo usando `verifyPin` (PBKDF2-SHA256 con la sal y las iteraciones del staff).",
+      "CUANDO se ingresa un PIN incorrecto 5 veces seguidas EL SISTEMA DEBERÁ bloquear a ese staff 30 segundos, mostrar `Bloqueado 30 s` y encolar un evento `pin_bloqueado` en el outbox.",
+      "CUANDO `enqueueEvent` encola 3 eventos EL SISTEMA DEBERÁ asignar `clientSeq` 1, 2 y 3 consecutivos y un `eventId` UUID distinto a cada uno, persistidos en la tabla `outbox`.",
+      "CUANDO `hashPin(\"1234\", sal, 210000)` se calcula dos veces EL SISTEMA DEBERÁ devolver el mismo hash hexadecimal de 64 caracteres, y uno distinto para el PIN `1235`."
+    ],
+    "verify": [
+      "npm run test -- src/pos/pin-outbox.test.tsx",
+      "npm run typecheck",
+      "npm run lint",
+      "npm run format:check",
+      "npm run test",
+      "npm run test:db",
+      "npm run build",
+      "npm run e2e -- e2e/smoke.spec.ts",
+      "status=0; grep -rnE '\\.(skip|only)\\(' src supabase/tests e2e || status=$?; test \"$status\" -eq 1"
+    ],
+    "checkpoint": "step-10-cajero-pin",
+    "files": [
+      "src/lib/pin.ts",
+      "src/pos/outbox.ts",
+      "src/pos/CashierLogin.tsx",
+      "src/pos/PosRoutes.tsx",
+      "src/pos/pin-outbox.test.tsx"
+    ],
+    "status": "pending"
+  },
+  {
+    "id": "E2-T5",
+    "title": "Turno en caja: fondo, cierre ciego y acciones de supervisor",
+    "epic": "02-cierre-y-caja",
+    "dependencies": [
+      "E2-T4",
+      "E1-T5"
+    ],
+    "priority": "p0",
+    "acceptance": [
+      "CUANDO el cajero abre turno con fondo `{\"100\": 3, \"50\": 4}` y el PIN de un supervisor distinto EL SISTEMA DEBERÁ guardar un turno `abierto` con total de fondo 500 y encolar `turno_abierto` con `approved_by` del supervisor.",
+      "CUANDO el PIN de aprobación pertenece al mismo staff que abre el turno EL SISTEMA DEBERÁ mostrar `Se requiere otro supervisor` y no encolar ningún evento.",
+      "CUANDO el cajero cierra turno EL SISTEMA DEBERÁ pedir el conteo por denominación sin mostrar el efectivo esperado, y solo después de enviar mostrar esperado, contado y diferencia, encolando `turno_cerrado`.",
+      "CUANDO se solicita anular una venta local sin PIN de supervisor EL SISTEMA DEBERÁ marcarla `anulacion_solicitada` y encolar `anulacion_solicitada` sin `approved_by`, y con el PIN de un supervisor distinto DEBERÁ marcarla `anulada` y encolar con `approved_by`.",
+      "CUANDO se abre la gaveta sin venta o se registra consumo interno EL SISTEMA DEBERÁ exigir un motivo de al menos 5 caracteres (y PIN de supervisor para consumo interno) y encolar `gaveta_abierta` o `consumo_interno`."
+    ],
+    "verify": [
+      "npm run test -- src/pos/shift.test.tsx",
+      "npm run typecheck",
+      "npm run lint",
+      "npm run format:check",
+      "npm run test",
+      "npm run test:db",
+      "npm run build",
+      "npm run e2e -- e2e/smoke.spec.ts",
+      "status=0; grep -rnE '\\.(skip|only)\\(' src supabase/tests e2e || status=$?; test \"$status\" -eq 1"
+    ],
+    "checkpoint": "step-11-turno-caja",
+    "files": [
+      "src/pos/shift.ts",
+      "src/pos/ShiftScreens.tsx",
+      "src/pos/SupervisorActions.tsx",
+      "src/pos/PosRoutes.tsx",
+      "src/pos/shift.test.tsx"
+    ],
+    "status": "pending"
+  },
+  {
+    "id": "E2-T6",
+    "title": "Pantalla de venta táctil con pagos y recibo correlativo",
+    "epic": "02-cierre-y-caja",
+    "dependencies": [
+      "E2-T5"
+    ],
+    "priority": "p0",
+    "acceptance": [
+      "CUANDO se abre la pantalla de venta EL SISTEMA DEBERÁ mostrar 6 pestañas en el orden Combos familiares, Combos personales, Pollo en piezas, Combos infantiles, Extras, Bebidas, y botones de producto con nombre, precio y las clases `min-h-18` y `min-w-18` (72 px).",
+      "CUANDO se agregan 2× `PZ-001` (L 120.00) y 1× `BE-008` (L 13.00) EL SISTEMA DEBERÁ mostrar el total `L 253.00` y el ISV incluido `L 33.00`.",
+      "CUANDO no se ha elegido `Comer aquí` ni `Para llevar` EL SISTEMA DEBERÁ mantener deshabilitado el botón `Cobrar`.",
+      "CUANDO se cobra en efectivo con L 300.00 recibidos para un total de L 253.00 EL SISTEMA DEBERÁ mostrar el cambio `L 47.00`, guardar la venta con `receiptCode` `R-00000001` y encolar un evento `venta` en la misma transacción Dexie.",
+      "CUANDO se cobra mixto con L 200.00 en efectivo y L 53.00 por transferencia sin referencia EL SISTEMA DEBERÁ mantener deshabilitado `Confirmar` hasta que se ingrese una referencia de al menos 4 caracteres.",
+      "CUANDO se registran dos ventas concurrentes EL SISTEMA DEBERÁ asignar `R-00000001` y `R-00000002` sin huecos ni repetidos, con 2 eventos `venta` en `outbox` con `clientSeq` consecutivos y `fetch` no llamado."
+    ],
+    "verify": [
+      "npm run test -- src/pos/sale.test.tsx",
+      "npm run typecheck",
+      "npm run lint",
+      "npm run format:check",
+      "npm run test",
+      "npm run test:db",
+      "npm run build",
+      "npm run e2e -- e2e/smoke.spec.ts",
+      "status=0; grep -rnE '\\.(skip|only)\\(' src supabase/tests e2e || status=$?; test \"$status\" -eq 1"
+    ],
+    "checkpoint": "step-12-pantalla-venta",
+    "files": [
+      "src/pos/cart.ts",
+      "src/pos/NumPad.tsx",
+      "src/pos/SaleScreen.tsx",
+      "src/pos/PosRoutes.tsx",
+      "src/pos/sale.test.tsx"
+    ],
+    "status": "pending"
+  },
+  {
+    "id": "E3-T1",
+    "title": "Motor de sincronización, indicador y respaldo de emergencia",
+    "epic": "03-operacion-panel-salida",
+    "dependencies": [
+      "E2-T6"
+    ],
+    "priority": "p0",
+    "acceptance": [
+      "CUANDO hay 50 eventos pendientes y el transporte falso responde `aplicado` EL SISTEMA DEBERÁ enviarlos en orden de `clientSeq` en lotes de máximo 25 y dejar 0 pendientes.",
+      "CUANDO el transporte falso responde `duplicado` al reenviar eventos ya aplicados EL SISTEMA DEBERÁ marcarlos como confirmados sin crear filas nuevas en el outbox.",
+      "CUANDO el transporte lanza un error `RED` EL SISTEMA DEBERÁ conservar los eventos `pendiente`, mostrar el estado `Sin conexión` y programar los reintentos a 2 s, 4 s, 8 s con tope de 300 s.",
+      "CUANDO el servidor responde `rechazado` para un evento EL SISTEMA DEBERÁ mostrar el estado `Error` con el contador de rechazados y conservar el evento con su mensaje.",
+      "CUANDO se toca `Exportar respaldo de emergencia` EL SISTEMA DEBERÁ generar un JSON con las claves `outbox`, `sales`, `shifts` y `meta` de Dexie.",
+      "CUANDO el estado es `Sincronizado` EL SISTEMA DEBERÁ mostrar `0 pendientes` y la hora de la última sincronización."
+    ],
+    "verify": [
+      "npm run test -- src/pos/sync.test.tsx",
+      "npm run typecheck",
+      "npm run lint",
+      "npm run format:check",
+      "npm run test",
+      "npm run test:db",
+      "npm run build",
+      "npm run e2e -- e2e/smoke.spec.ts",
+      "status=0; grep -rnE '\\.(skip|only)\\(' src supabase/tests e2e || status=$?; test \"$status\" -eq 1"
+    ],
+    "checkpoint": "step-13-sincronizacion",
+    "files": [
+      "src/pos/sync.ts",
+      "src/pos/SyncIndicator.tsx",
+      "src/pos/emergency-export.ts",
+      "src/pos/PosRoutes.tsx",
+      "src/pos/sync.test.tsx"
+    ],
+    "status": "pending"
+  },
+  {
+    "id": "E3-T2",
+    "title": "Recibo de 80 mm, impresión y reimpresión COPIA",
+    "epic": "03-operacion-panel-salida",
+    "dependencies": [
+      "E3-T1"
+    ],
+    "priority": "p0",
+    "acceptance": [
+      "CUANDO se construye el recibo de una venta EL SISTEMA DEBERÁ producir líneas de máximo 48 caracteres que contienen `POLLO CHILERO`, `RECIBO DE VENTA`, el código `R-00000001`, el cajero, `Comer aquí` o `Para llevar`, cada producto, el total, la forma de pago, recibido, cambio y `Este documento no es una factura`.",
+      "CUANDO se reimprime una venta EL SISTEMA DEBERÁ incluir la línea `*** COPIA ***` y encolar un evento `reimpresion`.",
+      "CUANDO el modo de impresión es `serial` EL SISTEMA DEBERÁ enviar los bytes del recibo sin el pulso de gaveta ESC p (`1b 70`), sea el pago en efectivo o por transferencia, porque la gaveta no tiene conexión con el sistema y se abre a mano.",
+      "CUANDO el modo es `navegador` o Web Serial no está disponible EL SISTEMA DEBERÁ renderizar `ReceiptPrintView` con la clase `receipt-80mm` y llamar `window.print()` una vez.",
+      "CUANDO un monto de 1234.5 aparece en el recibo EL SISTEMA DEBERÁ imprimirlo como `L 1,234.50` sin depender de `Intl`."
+    ],
+    "verify": [
+      "npm run test -- src/pos/print/receipt.test.ts",
+      "npm run typecheck",
+      "npm run lint",
+      "npm run format:check",
+      "npm run test",
+      "npm run test:db",
+      "npm run build",
+      "npm run e2e -- e2e/smoke.spec.ts",
+      "status=0; grep -rnE '\\.(skip|only)\\(' src supabase/tests e2e || status=$?; test \"$status\" -eq 1"
+    ],
+    "checkpoint": "step-14-recibo-impresion",
+    "files": [
+      "src/pos/print/receipt.ts",
+      "src/pos/print/print-service.ts",
+      "src/pos/print/ReceiptPrintView.tsx",
+      "src/pos/SaleScreen.tsx",
+      "src/pos/print/receipt.test.ts"
+    ],
+    "status": "pending"
+  },
+  {
+    "id": "E3-T3",
+    "title": "Panel: login, MFA TOTP, tablero y decisiones pendientes",
+    "epic": "03-operacion-panel-salida",
+    "dependencies": [
+      "E2-T1",
+      "E2-T2"
+    ],
+    "priority": "p0",
+    "acceptance": [
+      "CUANDO un visitante sin sesión abre `/panel` EL SISTEMA DEBERÁ mostrar el encabezado `Panel de socios` con el formulario `Iniciar sesión` (correo y contraseña) y ningún dato del negocio.",
+      "CUANDO la sesión es `aal1` y el usuario no tiene factor TOTP EL SISTEMA DEBERÁ mostrar el enrolamiento con el código QR y exigir un código de 6 dígitos antes de mostrar el tablero.",
+      "CUANDO la sesión es `aal2` y `panel_whoami` devuelve rol `socio` EL SISTEMA DEBERÁ mostrar el tablero con venta total, número de recibos, ticket promedio y alertas, sin los botones `Confirmar`, `Rechazar` ni `Aprobar`.",
+      "CUANDO el rol es `supervisor` EL SISTEMA DEBERÁ mostrar transferencias y anulaciones pendientes con botones que llaman `confirm_transfer`, `reject_transfer` y `decide_void`, y alertas con `Reconocer` que llama `ack_alert`.",
+      "CUANDO pasan 60 segundos con el tablero abierto EL SISTEMA DEBERÁ volver a consultar `panel_summary`."
+    ],
+    "verify": [
+      "npm run test -- src/panel/panel-access.test.tsx",
+      "npm run typecheck",
+      "npm run lint",
+      "npm run format:check",
+      "npm run test",
+      "npm run test:db",
+      "npm run build",
+      "npm run e2e -- e2e/smoke.spec.ts",
+      "status=0; grep -rnE '\\.(skip|only)\\(' src supabase/tests e2e || status=$?; test \"$status\" -eq 1"
+    ],
+    "checkpoint": "step-15-panel-acceso",
+    "files": [
+      "src/panel/PanelRoutes.tsx",
+      "src/panel/AuthScreens.tsx",
+      "src/panel/PanelGuard.tsx",
+      "src/panel/DashboardPage.tsx",
+      "src/panel/panel-access.test.tsx"
+    ],
+    "status": "pending"
+  },
+  {
+    "id": "E3-T4",
+    "title": "Panel: inventario, recetas, personal y emparejamiento",
+    "epic": "03-operacion-panel-salida",
+    "dependencies": [
+      "E3-T3",
+      "E1-T6"
+    ],
+    "priority": "p1",
+    "acceptance": [
+      "CUANDO el supervisor registra una compra de `POLLO-ENTERO` sin libras EL SISTEMA DEBERÁ mostrar `Las libras son obligatorias para pollo entero` y no llamar `register_purchase`.",
+      "CUANDO registra una compra válida EL SISTEMA DEBERÁ llamar `register_purchase` con `p_item_code`, `p_qty`, `p_total_cost`, `p_pounds` y `p_supplier`.",
+      "CUANDO abre Corte e ingresa 3 pollos EL SISTEMA DEBERÁ proponer 6 alas, 6 piernas, 6 muslos y 6 pechugas editables y enviar `register_cut` con el desglose final.",
+      "CUANDO guarda la receta de un producto EL SISTEMA DEBERÁ llamar `upsert_recipe` solo con líneas de cantidad mayor a 0 y rechazar una receta sin líneas.",
+      "CUANDO crea un cajero con PIN `4821` EL SISTEMA DEBERÁ enviar a `upsert_staff` una sal de 32 caracteres hex y un hash PBKDF2 de 64 caracteres hex, y ningún argumento con el PIN en claro.",
+      "CUANDO genera un código de emparejamiento EL SISTEMA DEBERÁ mostrar el código devuelto por `create_pairing_code` y el aviso `vence en 15 minutos`."
+    ],
+    "verify": [
+      "npm run test -- src/panel/panel-ops.test.tsx",
+      "npm run typecheck",
+      "npm run lint",
+      "npm run format:check",
+      "npm run test",
+      "npm run test:db",
+      "npm run build",
+      "npm run e2e -- e2e/smoke.spec.ts",
+      "status=0; grep -rnE '\\.(skip|only)\\(' src supabase/tests e2e || status=$?; test \"$status\" -eq 1"
+    ],
+    "checkpoint": "step-16-panel-inventario-admin",
+    "files": [
+      "src/panel/InventoryPage.tsx",
+      "src/panel/AdminPage.tsx",
+      "src/panel/forms.ts",
+      "src/panel/PanelRoutes.tsx",
+      "src/panel/panel-ops.test.tsx"
+    ],
+    "status": "pending"
+  },
+  {
+    "id": "E3-T5",
+    "title": "Panel: asistente de cierre ciego, reporte Z y CSV",
+    "epic": "03-operacion-panel-salida",
+    "dependencies": [
+      "E3-T4"
+    ],
+    "priority": "p0",
+    "acceptance": [
+      "CUANDO el supervisor abre el cierre del día EL SISTEMA DEBERÁ mostrar los 5 pasos en orden (efectivo, inventario, transferencias, ingreso, firma) y no permitir avanzar a un paso sin completar el anterior.",
+      "CUANDO está en el paso de efectivo EL SISTEMA DEBERÁ pedir el conteo por denominación sin mostrar el efectivo esperado ni las ventas del día.",
+      "CUANDO `day_close_finalize` responde `JUSTIFICACION_REQUERIDA` EL SISTEMA DEBERÁ mostrar un campo de justificación obligatorio y reenviar con `p_justification`.",
+      "CUANDO el cierre se completa EL SISTEMA DEBERÁ mostrar el reporte Z con fecha, rango de recibos, ventas por forma de pago, ISV, anulaciones, efectivo esperado, contado y diferencia, y merma, sin ningún control de edición.",
+      "CUANDO se exportan datos a CSV EL SISTEMA DEBERÁ generar texto UTF-8 que empieza con BOM, con encabezados en español y comillas dobles escapadas según RFC 4180."
+    ],
+    "verify": [
+      "npm run test -- src/panel/dayclose.test.tsx",
+      "npm run typecheck",
+      "npm run lint",
+      "npm run format:check",
+      "npm run test",
+      "npm run test:db",
+      "npm run build",
+      "npm run e2e -- e2e/smoke.spec.ts",
+      "status=0; grep -rnE '\\.(skip|only)\\(' src supabase/tests e2e || status=$?; test \"$status\" -eq 1"
+    ],
+    "checkpoint": "step-17-panel-cierre-z",
+    "files": [
+      "src/panel/DayCloseWizard.tsx",
+      "src/panel/ZReportView.tsx",
+      "src/lib/csv.ts",
+      "src/panel/PanelRoutes.tsx",
+      "src/panel/dayclose.test.tsx"
+    ],
+    "status": "pending"
+  },
+  {
+    "id": "E3-T6",
+    "title": "Endurecimiento: plantilla de factura, cabeceras y e2e",
+    "epic": "03-operacion-panel-salida",
+    "dependencies": [
+      "E3-T2",
+      "E3-T5"
+    ],
+    "priority": "p0",
+    "acceptance": [
+      "CUANDO `npm run e2e -- e2e/flujos.spec.ts` ejecuta el flujo venta sin conexión → sincronización EL SISTEMA DEBERÁ mostrar `Sin conexión` con `1 pendientes` mientras el contexto está offline y `Sincronizado` con `0 pendientes` al volver la red.",
+      "CUANDO ejecuta el flujo anulación → aprobación EL SISTEMA DEBERÁ mostrar la anulación pendiente en el panel del supervisor y, al aprobarla, el estado `anulada`.",
+      "CUANDO ejecuta el flujo cierre ciego → Z EL SISTEMA DEBERÁ completar los 5 pasos y mostrar el reporte Z, sin mostrar el efectivo esperado antes de enviar el conteo.",
+      "CUANDO `buildInvoiceLines` recibe una factura de L 1,150.00 gravada al 15% EL SISTEMA DEBERÁ incluir RTN del emisor, CAI, rango autorizado, fecha límite, número con formato `NNN-NNN-NN-NNNNNNNN`, `ORIGINAL: CLIENTE`, `COPIA: EMISOR`, gravado 15% `L 1,000.00`, ISV 15% `L 150.00`, `CONSUMIDOR FINAL` y `MIL CIENTO CINCUENTA LEMPIRAS CON 00/100`.",
+      "CUANDO `npm run build` termina EL SISTEMA DEBERÁ copiar `public/_headers` a `dist/_headers` con `Content-Security-Policy`, `Strict-Transport-Security`, `X-Frame-Options: DENY`, `Referrer-Policy` y `X-Content-Type-Options: nosniff`."
+    ],
+    "verify": [
+      "npm run test -- src/lib/hardening.test.ts",
+      "npm run typecheck",
+      "npm run lint",
+      "npm run format:check",
+      "npm run test",
+      "npm run test:db",
+      "npm run build",
+      "status=0; grep -rq 'mock-backend' dist || status=$?; test \"$status\" -eq 1",
+      "test -f dist/_headers",
+      "grep -q 'Content-Security-Policy' dist/_headers",
+      "grep -q 'X-Frame-Options: DENY' dist/_headers",
+      "npm run e2e",
+      "status=0; grep -rnE '\\.(skip|only)\\(' src supabase/tests e2e || status=$?; test \"$status\" -eq 1"
+    ],
+    "checkpoint": "step-18-endurecimiento-e2e",
+    "files": [
+      "src/lib/mock-backend.ts",
+      "src/lib/fiscal-invoice.ts",
+      "public/_headers",
+      "e2e/flujos.spec.ts",
+      "src/lib/hardening.test.ts"
+    ],
+    "status": "pending"
+  }
+]
