@@ -2,7 +2,7 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { useEffect, useState } from "react";
 import { Link, Route, Routes } from "react-router-dom";
 import { useBackend } from "@/lib/backend";
-import { buttonVariants } from "@/lib/utils";
+import { GALLO_URL, MarcaBanda } from "@/lib/marca";
 import { CashierLogin } from "@/pos/CashierLogin";
 import { getMeta, type StaffRow } from "@/pos/db";
 import { exportEmergency } from "@/pos/emergency-export";
@@ -34,6 +34,7 @@ function PosHome() {
   if (!estado) {
     return (
       <main className="min-h-screen bg-background p-6 text-foreground">
+        <MarcaBanda className="-mx-6 -mt-6 mb-6" />
         <h1 className="text-3xl font-bold text-primary">Caja</h1>
         <p className="mt-2 text-muted-foreground">Cargando…</p>
       </main>
@@ -56,46 +57,46 @@ function PosHome() {
   if (!estado.shift) return <OpenShiftScreen cashier={cajero} />;
   const shift = estado.shift;
 
+  const boton =
+    "inline-flex min-h-11 items-center rounded-lg border border-white/70 px-3 py-2 font-bold text-primary-foreground transition-opacity duration-150 ease-out hover:opacity-90";
   const barra = (
     <nav
-      className="flex flex-wrap items-center gap-3 bg-brand-orange p-3 text-foreground"
+      className="flex flex-wrap items-center gap-3 border-b-4 border-accent bg-primary p-3 text-primary-foreground"
       aria-label="Turno"
     >
+      <img
+        src={GALLO_URL}
+        alt=""
+        width={48}
+        height={38}
+        className="h-10 w-12 rounded-lg bg-accent object-cover"
+      />
       <span className="font-bold">
-        {estado.label} · Atiende: {cajero.displayName}
+        <span className="text-accent">POLLO CHILERO</span> · {estado.label} · Atiende:{" "}
+        {cajero.displayName}
       </span>
-      <button
-        type="button"
-        className={buttonVariants({ variant: "ghost" })}
-        onClick={() => setCerrando(shift.id)}
-      >
+      <button type="button" className={boton} onClick={() => setCerrando(shift.id)}>
         Cerrar turno
       </button>
       <button
         type="button"
-        className={buttonVariants({ variant: "ghost" })}
+        className={boton}
         onClick={() => setVista(vista === "supervisor" ? "principal" : "supervisor")}
       >
         {vista === "supervisor" ? "Volver a la venta" : "Acciones de supervisor"}
       </button>
-      <button
-        type="button"
-        className={buttonVariants({ variant: "ghost" })}
-        onClick={() => setCajero(null)}
-      >
+      <button type="button" className={boton} onClick={() => setCajero(null)}>
         Cambiar cajero
       </button>
-      <Link to="hardware" className={buttonVariants({ variant: "ghost" })}>
+      <Link to="hardware" className={boton}>
         Prueba de impresora
       </Link>
-      <button
-        type="button"
-        className={buttonVariants({ variant: "ghost" })}
-        onClick={() => void exportEmergency()}
-      >
+      <button type="button" className={boton} onClick={() => void exportEmergency()}>
         Exportar respaldo de emergencia
       </button>
-      <SyncIndicator />
+      <div className="rounded-lg bg-surface px-2 py-1 text-foreground">
+        <SyncIndicator />
+      </div>
     </nav>
   );
 

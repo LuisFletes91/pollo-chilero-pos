@@ -53,7 +53,10 @@ const L = (n: number) => formatLempiras(Number(n));
 
 function Card(props: { title: string; children: ReactNode }) {
   return (
-    <section className="rounded-xl bg-surface p-4" aria-label={props.title}>
+    <section
+      className="rounded-xl border-t-4 border-primary bg-surface p-4 shadow-sm"
+      aria-label={props.title}
+    >
       <h3 className="font-bold text-muted-foreground">{props.title}</h3>
       <div className="mt-2">{props.children}</div>
     </section>

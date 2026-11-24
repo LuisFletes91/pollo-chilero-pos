@@ -61,7 +61,10 @@ function Fila(props: { k: string; v: ReactNode }) {
 
 function Bloque(props: { title: string; children: ReactNode }) {
   return (
-    <section aria-label={props.title} className="rounded-xl bg-surface p-4">
+    <section
+      aria-label={props.title}
+      className="rounded-xl border-t-4 border-primary bg-surface p-4 shadow-sm"
+    >
       <h3 className="mb-2 font-bold">{props.title}</h3>
       <dl>{props.children}</dl>
     </section>

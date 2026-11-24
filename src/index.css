@@ -8,6 +8,8 @@
 @theme {
   --color-primary: #c8102e;
   --color-primary-foreground: #ffffff;
+  /* Rojo oscuro para texto sobre amarillo (5.72:1); el rojo base da 4.05:1. */
+  --color-primary-strong: #9e0c24;
   --color-accent: #ffd200;
   --color-accent-foreground: #1f1f1f;
   --color-brand-orange: #f28c00;

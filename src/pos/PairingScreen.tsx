@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { BackendError, useBackend } from "@/lib/backend";
+import { MarcaBanda } from "@/lib/marca";
 import { buttonVariants } from "@/lib/utils";
 import { pairDevice } from "@/pos/device";
 
@@ -34,6 +35,7 @@ export function PairingScreen() {
 
   return (
     <main className="mx-auto min-h-screen max-w-md bg-background p-6 text-foreground">
+      <MarcaBanda className="-mx-6 -mt-6 mb-6" />
       <h1 className="text-3xl font-bold text-primary">Caja — Emparejar esta caja</h1>
       <p className="mt-2 text-muted-foreground">
         Pida al supervisor un código de emparejamiento en el panel de socios.

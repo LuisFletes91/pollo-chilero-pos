@@ -8,6 +8,7 @@ import {
   verifyPin,
   type LockoutPolicy,
 } from "@/lib/pin";
+import { MarcaBanda } from "@/lib/marca";
 import { buttonVariants, cn } from "@/lib/utils";
 import { db, type StaffRow } from "@/pos/db";
 import { enqueueEvent } from "@/pos/outbox";
@@ -83,6 +84,7 @@ export function CashierLogin({ onLogin }: { onLogin: (staff: StaffRow) => void }
 
   return (
     <main className="min-h-screen bg-background p-6 text-foreground">
+      <MarcaBanda className="-mx-6 -mt-6 mb-6" />
       <h1 className="text-3xl font-bold text-primary">Caja — ¿Quién atiende?</h1>
       {!elegido ? (
         <div className="mt-6 flex flex-wrap gap-4">
