@@ -236,7 +236,7 @@
       "supabase/tests/cierre.test.ts",
       "supabase/tests/fiscal.test.ts"
     ],
-    "status": "pending"
+    "status": "done"
   },
   {
     "id": "E2-T2",
