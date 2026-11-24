@@ -6,6 +6,7 @@ import { CashierLogin } from "@/pos/CashierLogin";
 import { getMeta, type StaffRow } from "@/pos/db";
 import { PairingScreen } from "@/pos/PairingScreen";
 import { HardwareTestPage } from "@/pos/print/HardwareTestPage";
+import { SaleScreen } from "@/pos/SaleScreen";
 import { currentShift } from "@/pos/shift";
 import { CloseShiftScreen, OpenShiftScreen } from "@/pos/ShiftScreens";
 import { SupervisorActions } from "@/pos/SupervisorActions";
@@ -89,9 +90,7 @@ function PosHome() {
       {vista === "supervisor" ? (
         <SupervisorActions actor={cajero} shiftId={shift.id} />
       ) : (
-        <main className="min-h-screen bg-background p-6 text-foreground">
-          <h1 className="text-3xl font-bold text-primary">Caja — Turno abierto</h1>
-        </main>
+        <SaleScreen cashier={cajero} shift={shift} />
       )}
     </>
   );
