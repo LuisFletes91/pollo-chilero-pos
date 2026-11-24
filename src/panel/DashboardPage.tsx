@@ -141,9 +141,23 @@ export function TransferenciaItem(props: { t: Transferencia; supervisor: boolean
   );
 }
 
-function AnulacionItem(props: { a: Anulacion; supervisor: boolean }) {
-  const { a, supervisor } = props;
+function AnulacionItem(props: {
+  a: Anulacion;
+  supervisor: boolean;
+  onDecided: (texto: string) => void;
+}) {
+  const { a, supervisor, onDecided } = props;
   const decidir = useDecision("decide_void", "anulaciones_pendientes");
+  const decide = (aprobar: boolean) =>
+    decidir.mutate(
+      { p_void_id: a.void_id, p_approve: aprobar },
+      {
+        onSuccess: () =>
+          onDecided(
+            aprobar ? `${a.receipt_code} anulada` : `Anulación de ${a.receipt_code} rechazada`,
+          ),
+      },
+    );
   return (
     <li className="space-y-2 border-b border-border py-2">
       <p>
@@ -155,7 +169,7 @@ function AnulacionItem(props: { a: Anulacion; supervisor: boolean }) {
             type="button"
             className={buttonVariants()}
             disabled={decidir.isPending}
-            onClick={() => decidir.mutate({ p_void_id: a.void_id, p_approve: true })}
+            onClick={() => decide(true)}
           >
             Aprobar
           </button>
@@ -163,7 +177,7 @@ function AnulacionItem(props: { a: Anulacion; supervisor: boolean }) {
             type="button"
             className={buttonVariants({ variant: "danger" })}
             disabled={decidir.isPending}
-            onClick={() => decidir.mutate({ p_void_id: a.void_id, p_approve: false })}
+            onClick={() => decide(false)}
           >
             Rechazar
           </button>
@@ -178,6 +192,7 @@ function Pendientes(props: { supervisor: boolean }) {
   const transf = useList<Transferencia>("transferencias_pendientes");
   const anul = useList<Anulacion>("anulaciones_pendientes");
   const reconocer = useDecision("ack_alert", "alertas");
+  const [decision, setDecision] = useState<string | null>(null);
   return (
     <div className="grid gap-4 md:grid-cols-3">
       <Card title="Alertas abiertas">
@@ -217,9 +232,19 @@ function Pendientes(props: { supervisor: boolean }) {
         <Estado q={anul} vacio={anul.data?.length === 0} textoVacio="Sin anulaciones pendientes" />
         <ul>
           {anul.data?.map((a) => (
-            <AnulacionItem key={a.void_id} a={a} supervisor={props.supervisor} />
+            <AnulacionItem
+              key={a.void_id}
+              a={a}
+              supervisor={props.supervisor}
+              onDecided={setDecision}
+            />
           ))}
         </ul>
+        {decision && (
+          <p role="status" className="font-bold">
+            {decision}
+          </p>
+        )}
       </Card>
     </div>
   );

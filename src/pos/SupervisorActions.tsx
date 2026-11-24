@@ -6,6 +6,11 @@ import { internalConsumption, openDrawer, requestVoid } from "@/pos/shift";
 import { SupervisorPin } from "@/pos/SupervisorPin";
 
 const PIEZAS = ["ALA", "PIERNA", "MUSLO", "PECHUGA", "PAPA-PERS"];
+const ESTADO_VENTA: Record<SaleRow["status"], string> = {
+  registrada: "Registrada",
+  anulacion_solicitada: "Anulación solicitada",
+  anulada: "Anulada",
+};
 
 function useResultado() {
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
@@ -89,7 +94,7 @@ export function SupervisorActions({ actor, shiftId }: { actor: StaffRow; shiftId
                 <span className="font-bold">{s.receiptCode}</span>
                 <span>{formatLempiras(s.total)}</span>
               </div>
-              <p className="text-sm text-muted-foreground">{s.status}</p>
+              <p className="text-sm text-muted-foreground">{ESTADO_VENTA[s.status]}</p>
               {s.status === "registrada" &&
                 (elegida === s.id ? (
                   <VoidForm actor={actor} sale={s} />

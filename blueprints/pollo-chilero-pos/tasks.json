@@ -646,6 +646,6 @@
       "e2e/flujos.spec.ts",
       "src/lib/hardening.test.ts"
     ],
-    "status": "pending"
+    "status": "done"
   }
 ]
