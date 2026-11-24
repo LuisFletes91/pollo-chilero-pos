@@ -201,7 +201,7 @@
       "supabase/migrations/20261122000400_inventario.sql",
       "supabase/tests/inventario.test.ts"
     ],
-    "status": "pending"
+    "status": "done"
   },
   {
     "id": "E2-T1",
