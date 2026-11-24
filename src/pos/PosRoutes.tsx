@@ -6,13 +6,22 @@ import { CashierLogin } from "@/pos/CashierLogin";
 import { getMeta, type StaffRow } from "@/pos/db";
 import { PairingScreen } from "@/pos/PairingScreen";
 import { HardwareTestPage } from "@/pos/print/HardwareTestPage";
+import { currentShift } from "@/pos/shift";
+import { CloseShiftScreen, OpenShiftScreen } from "@/pos/ShiftScreens";
+import { SupervisorActions } from "@/pos/SupervisorActions";
+
+type Vista = "principal" | "supervisor";
 
 function PosHome() {
   const estado = useLiveQuery(async () => ({
     deviceId: await getMeta<string>("deviceId"),
     label: await getMeta<string>("deviceLabel"),
+    shift: (await currentShift()) ?? null,
   }));
   const [cajero, setCajero] = useState<StaffRow | null>(null);
+  const [vista, setVista] = useState<Vista>("principal");
+  // Se guarda el id del turno al cerrar: el resultado debe seguir visible aunque el turno ya no esté abierto.
+  const [cerrando, setCerrando] = useState<string | null>(null);
 
   if (!estado) {
     return (
@@ -24,23 +33,67 @@ function PosHome() {
   }
   if (!estado.deviceId) return <PairingScreen />;
   if (!cajero) return <CashierLogin onLogin={setCajero} />;
+  if (cerrando) {
+    return (
+      <CloseShiftScreen
+        shiftId={cerrando}
+        onDone={() => {
+          setCerrando(null);
+          setVista("principal");
+          setCajero(null);
+        }}
+      />
+    );
+  }
+  if (!estado.shift) return <OpenShiftScreen cashier={cajero} />;
+  const shift = estado.shift;
+
+  const barra = (
+    <nav
+      className="flex flex-wrap items-center gap-3 bg-brand-orange p-3 text-foreground"
+      aria-label="Turno"
+    >
+      <span className="font-bold">
+        {estado.label} · Atiende: {cajero.displayName}
+      </span>
+      <button
+        type="button"
+        className={buttonVariants({ variant: "ghost" })}
+        onClick={() => setCerrando(shift.id)}
+      >
+        Cerrar turno
+      </button>
+      <button
+        type="button"
+        className={buttonVariants({ variant: "ghost" })}
+        onClick={() => setVista(vista === "supervisor" ? "principal" : "supervisor")}
+      >
+        {vista === "supervisor" ? "Volver a la venta" : "Acciones de supervisor"}
+      </button>
+      <button
+        type="button"
+        className={buttonVariants({ variant: "ghost" })}
+        onClick={() => setCajero(null)}
+      >
+        Cambiar cajero
+      </button>
+      <Link to="hardware" className={buttonVariants({ variant: "ghost" })}>
+        Prueba de impresora
+      </Link>
+    </nav>
+  );
+
   return (
-    <main className="min-h-screen bg-background p-6 text-foreground">
-      <h1 className="text-3xl font-bold text-primary">Caja — {estado.label}</h1>
-      <p className="mt-2 text-lg">Atiende: {cajero.displayName}</p>
-      <div className="mt-4 flex gap-3">
-        <button
-          type="button"
-          className={buttonVariants({ variant: "ghost" })}
-          onClick={() => setCajero(null)}
-        >
-          Cambiar cajero
-        </button>
-        <Link to="hardware" className={buttonVariants({ variant: "ghost" })}>
-          Prueba de impresora
-        </Link>
-      </div>
-    </main>
+    <>
+      {barra}
+      {vista === "supervisor" ? (
+        <SupervisorActions actor={cajero} shiftId={shift.id} />
+      ) : (
+        <main className="min-h-screen bg-background p-6 text-foreground">
+          <h1 className="text-3xl font-bold text-primary">Caja — Turno abierto</h1>
+        </main>
+      )}
+    </>
   );
 }
 
