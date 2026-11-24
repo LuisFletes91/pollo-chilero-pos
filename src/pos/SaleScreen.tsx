@@ -14,6 +14,7 @@ import {
 } from "@/pos/cart";
 import { db, type ShiftRow, type StaffRow } from "@/pos/db";
 import { NumPad } from "@/pos/NumPad";
+import { printSale, reprintSale } from "@/pos/print/print-service";
 
 type Modo = "efectivo" | "transferencia" | "mixto";
 
@@ -189,6 +190,8 @@ export function SaleScreen(props: { cashier: StaffRow; shift: ShiftRow }) {
   const [tipo, setTipo] = useState<OrderType | null>(null);
   const [cobrando, setCobrando] = useState(false);
   const [aviso, setAviso] = useState<string | null>(null);
+  const [confirmarCopia, setConfirmarCopia] = useState(false);
+  const ultima = useLiveQuery(() => db.sales.orderBy("receiptNumber").last(), []);
   const totales = cartTotals(carrito);
 
   return (
@@ -305,6 +308,43 @@ export function SaleScreen(props: { cashier: StaffRow; shift: ShiftRow }) {
             {aviso}
           </p>
         )}
+        {ultima &&
+          (confirmarCopia ? (
+            <div className="space-y-2" role="group" aria-label="Confirmar reimpresión">
+              <p>¿Reimprimir {ultima.receiptCode} como COPIA?</p>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  className={buttonVariants({ size: "pos" })}
+                  onClick={() => {
+                    setConfirmarCopia(false);
+                    reprintSale(ultima, cashier.id).catch((e: unknown) =>
+                      setAviso(
+                        `No se pudo reimprimir: ${e instanceof Error ? e.message : String(e)}`,
+                      ),
+                    );
+                  }}
+                >
+                  Sí, reimprimir
+                </button>
+                <button
+                  type="button"
+                  className={buttonVariants({ variant: "ghost", size: "pos" })}
+                  onClick={() => setConfirmarCopia(false)}
+                >
+                  No
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              type="button"
+              className={cn(buttonVariants({ variant: "ghost", size: "pos" }), "w-full")}
+              onClick={() => setConfirmarCopia(true)}
+            >
+              Reimprimir último
+            </button>
+          ))}
       </aside>
 
       {cobrando && tipo && (
@@ -323,6 +363,12 @@ export function SaleScreen(props: { cashier: StaffRow; shift: ShiftRow }) {
             setTipo(null);
             setCobrando(false);
             setAviso(`Recibo ${sale.receiptCode} registrado`);
+            // La venta ya está guardada: un fallo de impresión no la revierte.
+            printSale(sale, { copy: false }).catch((e: unknown) =>
+              setAviso(
+                `Recibo ${sale.receiptCode} registrado. No se pudo imprimir: ${e instanceof Error ? e.message : String(e)}`,
+              ),
+            );
           }}
         />
       )}

@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
@@ -80,6 +80,7 @@ beforeEach(async () => {
   await db.products.bulkPut([PZ001, BE008]);
   await db.shifts.put(turno);
   fetchSpy = vi.spyOn(globalThis, "fetch");
+  window.print = vi.fn();
 });
 
 afterEach(() => {
@@ -183,6 +184,7 @@ describe("pantalla de venta", () => {
       ],
     });
     expect(screen.getByLabelText("Total").textContent).toBe("L 0.00");
+    await waitFor(() => expect(window.print).toHaveBeenCalledTimes(1));
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 
