@@ -47,8 +47,11 @@ export function useRpc(fn: string, invalidar: string[]) {
 
 export function Section(props: { title: string; children: ReactNode }) {
   return (
-    <section aria-label={props.title} className="space-y-3 rounded-xl bg-surface p-4">
-      <h2 className="text-xl font-bold">{props.title}</h2>
+    <section
+      aria-label={props.title}
+      className="space-y-3 rounded-xl border-t-4 border-primary bg-surface p-4 shadow-sm"
+    >
+      <h2 className="text-xl font-bold text-primary">{props.title}</h2>
       {props.children}
     </section>
   );

@@ -1,5 +1,6 @@
 import { useLiveQuery } from "dexie-react-hooks";
 import { useState } from "react";
+import { FOTO_CATEGORIA, PildoraTitulo } from "@/lib/marca";
 import { buttonVariants, cn, formatLempiras, round2 } from "@/lib/utils";
 import {
   addItem,
@@ -65,7 +66,7 @@ function PaymentDialog(props: {
       aria-labelledby="cobro-titulo"
       className="fixed inset-0 z-10 flex items-center justify-center bg-black/40 p-4"
     >
-      <div className="w-full max-w-lg space-y-4 rounded-xl bg-surface p-6 text-foreground">
+      <div className="w-full max-w-lg space-y-4 rounded-xl border-4 border-primary bg-surface p-6 text-foreground">
         <h2 id="cobro-titulo" className="text-2xl font-bold text-primary">
           Cobrar {formatLempiras(total)}
         </h2>
@@ -206,13 +207,22 @@ export function SaleScreen(props: { cashier: StaffRow; shift: ShiftRow }) {
               role="tab"
               aria-selected={c.code === categoria}
               className={cn(
-                "min-h-18 rounded-lg px-4 py-2",
+                "flex min-h-18 items-center gap-2 rounded-xl border-2 px-3 py-2 font-bold",
                 c.code === categoria
-                  ? "bg-accent text-accent-foreground font-bold text-xl"
-                  : "bg-surface text-lg",
+                  ? "border-primary bg-accent text-xl text-accent-foreground"
+                  : "border-primary/30 bg-surface text-lg",
               )}
               onClick={() => setActiva(c.code)}
             >
+              {FOTO_CATEGORIA[c.code] && (
+                <img
+                  src={FOTO_CATEGORIA[c.code]}
+                  alt=""
+                  width={56}
+                  height={48}
+                  className="h-12 w-14 rounded-lg object-cover"
+                />
+              )}
               {c.name}
             </button>
           ))}
@@ -224,7 +234,7 @@ export function SaleScreen(props: { cashier: StaffRow; shift: ShiftRow }) {
               type="button"
               className={cn(
                 buttonVariants({ variant: "ghost", size: "pos" }),
-                "flex-col bg-surface text-center",
+                "flex-col rounded-xl border-2 border-primary bg-surface text-center",
               )}
               onClick={() => {
                 setCarrito((c) => addItem(c, p));
@@ -232,14 +242,19 @@ export function SaleScreen(props: { cashier: StaffRow; shift: ShiftRow }) {
               }}
             >
               <span>{p.name}</span>
-              <span className="text-primary">{formatLempiras(p.price)}</span>
+              <span className="rounded-full bg-primary px-3 py-0.5 text-primary-foreground">
+                {formatLempiras(p.price)}
+              </span>
             </button>
           ))}
         </div>
       </section>
 
-      <aside aria-label="Carrito" className="w-full space-y-4 rounded-xl bg-surface p-4 lg:w-96">
-        <h2 className="text-xl font-bold">Pedido</h2>
+      <aside
+        aria-label="Carrito"
+        className="w-full space-y-4 rounded-xl border-4 border-primary bg-surface p-4 lg:w-96"
+      >
+        <PildoraTitulo>Pedido</PildoraTitulo>
         {carrito.length === 0 && <p className="text-muted-foreground">Sin productos</p>}
         <ul className="space-y-2">
           {carrito.map((l) => (
@@ -267,7 +282,7 @@ export function SaleScreen(props: { cashier: StaffRow; shift: ShiftRow }) {
             </li>
           ))}
         </ul>
-        <p className="text-5xl font-bold" aria-label="Total">
+        <p className="text-5xl font-bold text-primary" aria-label="Total">
           {formatLempiras(totales.total)}
         </p>
         <p className="text-muted-foreground">

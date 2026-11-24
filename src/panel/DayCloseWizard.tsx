@@ -322,7 +322,10 @@ export function DayCloseWizard() {
 
   if (!iniciado) {
     return (
-      <section aria-label="Cierre del día" className="space-y-3 rounded-xl bg-surface p-4">
+      <section
+        aria-label="Cierre del día"
+        className="space-y-3 rounded-xl border-t-4 border-primary bg-surface p-4 shadow-sm"
+      >
         <h2 className="text-xl font-bold">Cierre del día</h2>
         <label className="block">
           Fecha
@@ -342,7 +345,10 @@ export function DayCloseWizard() {
   }
 
   return (
-    <section aria-label="Cierre del día" className="space-y-4 rounded-xl bg-surface p-4">
+    <section
+      aria-label="Cierre del día"
+      className="space-y-4 rounded-xl border-t-4 border-primary bg-surface p-4 shadow-sm"
+    >
       <h2 className="text-xl font-bold">Cierre del día {fecha}</h2>
       <ol aria-label="Pasos del cierre" className="flex flex-wrap gap-2">
         {PASOS.map((nombre, i) => (

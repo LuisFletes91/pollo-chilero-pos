@@ -1,6 +1,7 @@
 import { QueryClientProvider } from "@tanstack/react-query";
 import { NavLink, Route, Routes } from "react-router-dom";
 import { queryClient } from "@/lib/backend";
+import { MarcaBanda } from "@/lib/marca";
 import { cn } from "@/lib/utils";
 import { AdminPage } from "@/panel/AdminPage";
 import { DashboardPage } from "@/panel/DashboardPage";
@@ -11,19 +12,25 @@ import { ReportsPage } from "@/panel/ReportsPage";
 
 const enlace = ({ isActive }: { isActive: boolean }) =>
   cn(
-    "rounded-lg px-3 py-2 font-bold",
-    isActive ? "bg-accent text-accent-foreground" : "text-foreground",
+    "rounded-lg border-2 px-3 py-2 font-bold transition-opacity duration-150 ease-out",
+    isActive
+      ? "border-primary bg-accent text-accent-foreground"
+      : "border-primary/30 bg-surface text-foreground",
   );
 
 function PanelLayout() {
   const user = usePanelUser();
   return (
     <main className="mx-auto min-h-screen max-w-5xl space-y-4 bg-background p-4 text-foreground">
-      <header className="space-y-2">
-        <h1 className="text-3xl font-bold text-primary">Panel de socios</h1>
-        <p className="text-muted-foreground">
-          {user.displayName} · {user.role === "supervisor" ? "Supervisor" : "Socio"}
-        </p>
+      <header className="space-y-3">
+        <MarcaBanda className="-mx-4 -mt-4 sm:rounded-b-xl">
+          <div className="ml-auto text-right">
+            <h1 className="text-2xl font-bold">Panel de socios</h1>
+            <p className="text-sm font-bold">
+              {user.displayName} · {user.role === "supervisor" ? "Supervisor" : "Socio"}
+            </p>
+          </div>
+        </MarcaBanda>
         <nav aria-label="Panel" className="flex flex-wrap gap-2">
           <NavLink to="/panel" end className={enlace}>
             Tablero

@@ -1,5 +1,6 @@
 import { useLiveQuery } from "dexie-react-hooks";
 import { useState } from "react";
+import { MarcaBanda } from "@/lib/marca";
 import { buttonVariants, formatLempiras } from "@/lib/utils";
 import type { StaffRow } from "@/pos/db";
 import {
@@ -77,6 +78,7 @@ export function OpenShiftScreen({ cashier }: { cashier: StaffRow }) {
 
   return (
     <main className="min-h-screen bg-background p-6 text-foreground">
+      <MarcaBanda className="-mx-6 -mt-6 mb-6" />
       <h1 className="text-3xl font-bold text-primary">Caja — Abrir turno</h1>
       <p className="mt-2">
         Cajero: {cashier.displayName}. Cuente el fondo inicial por denominación.
@@ -116,6 +118,7 @@ export function CloseShiftScreen({ shiftId, onDone }: { shiftId: string; onDone:
 
   return (
     <main className="min-h-screen bg-background p-6 text-foreground">
+      <MarcaBanda className="-mx-6 -mt-6 mb-6" />
       <h1 className="text-3xl font-bold text-primary">Caja — Cerrar turno</h1>
       {!resultado ? (
         <>

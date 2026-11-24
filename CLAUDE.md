@@ -83,12 +83,15 @@ Triggers escriben `audit_log` (cadena sha256) en toda tabla de negocio.
 | Token | Valor | Uso |
 |---|---|---|
 | `primary` | `#c8102e` | botones de acción, encabezados, foco (texto blanco 5.89:1) |
+| `primary-strong` | `#9e0c24` | texto rojo sobre amarillo (5.72:1), píldoras de título |
 | `accent` | `#ffd200` | pestaña de categoría activa (texto `#1f1f1f` 11.35:1) |
 | `brand-orange` | `#f28c00` | solo encabezado/splash (texto `#1f1f1f`, nunca blanco) |
 | `background` / `surface` | `#f5f5f5` / `#ffffff` | página / tarjetas |
 | `foreground` / `muted-foreground` | `#1f1f1f` / `#5c5c5c` | texto / secundario |
 | `success` / `warning` / `destructive` | `#1e7b34` / `#8a5200` / `#b00020` | estados (texto blanco ≥ 5.3:1) |
 
+- Marca: `src/lib/marca.tsx` (`MarcaBanda`, `PildoraTitulo`, `FOTO_CATEGORIA`); fotos en
+  `src/assets/marca/` recortadas del menú del local, provisionales hasta tener arte oficial.
 - Tipografía del sistema `system-ui, "Segoe UI", Roboto`, 700 en botones y encabezados; sin fuentes externas.
 - Caja: tema claro, botones de producto `min-h-18 min-w-18` (72 px) con nombre y precio, pestañas de
   categoría grandes arriba, carrito a la derecha, total `text-5xl`, teclado numérico en pantalla.

@@ -2,6 +2,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { useState, type FormEvent, type ReactNode } from "react";
 import { z } from "zod";
 import { useBackend, type Session } from "@/lib/backend";
+import { MarcaBanda } from "@/lib/marca";
 import { buttonVariants } from "@/lib/utils";
 
 const loginSchema = z.object({
@@ -15,6 +16,7 @@ const campo = "mt-1 w-full rounded-lg border border-border bg-surface p-3 text-l
 export function PanelShell(props: { subtitle?: string; children?: ReactNode }) {
   return (
     <main className="mx-auto min-h-screen max-w-md bg-background p-6 text-foreground">
+      <MarcaBanda className="-mx-6 -mt-6 mb-6 rounded-b-xl" />
       <h1 className="text-3xl font-bold text-primary">Panel de socios</h1>
       {props.subtitle && <h2 className="mt-2 text-xl font-bold">{props.subtitle}</h2>}
       {props.children}
